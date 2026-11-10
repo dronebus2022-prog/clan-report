@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>클랜 주간 성적 대시보드</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Pretendard', system-ui, -apple-system, sans-serif; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .table-input { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; text-align: right; }
+        .table-input:focus { border-color: #3b82f6; outline: none; background: rgba(30, 41, 59, 0.9); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- 헤더 섹션 -->
+        <div class="glass-panel rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                    🏆 7시즌 4주차 등반 결과
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">전투력 기준 순위 및 전주 대비 변동 리포트</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square"></i> 내 성적 입력하기
+                </button>
+            </div>
+        </div>
+
+        <!-- 주간 평균 성장량 요약 카드 -->
+        <div class="glass-panel rounded-2xl p-6 border-l-4 border-emerald-500">
+            <h3 class="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line"></i> 이번 주 클랜 평균 성장량
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="text-xs text-slate-400">전투력</div>
+                    <div class="text-lg font-bold text-emerald-400">▲ 22k</div>
+                </div>
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="text-xs text-slate-400">난투</div>
+                    <div class="text-lg font-bold text-rose-400">▼ 5</div>
+                </div>
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="text-xs text-slate-400">균열</div>
+                    <div class="text-lg font-bold text-emerald-400">▲ 60</div>
+                </div>
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="text-xs text-slate-400">전장</div>
+                    <div class="text-lg font-bold text-emerald-400">▲ 406</div>
+                </div>
+                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                    <div class="text-xs text-slate-400">군탑</div>
+                    <div class="text-lg font-bold text-emerald-400">▲ 24</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 랭킹 & 성적 표 데이터 -->
+        <div class="glass-panel rounded-2xl overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-800/80 text-slate-400 font-semibold uppercase border-b border-slate-700">
+                    <tr>
+                        <th class="p-4 text-center w-16">순위</th>
+                        <th class="p-4 text-center w-16">변동</th>
+                        <th class="p-4">닉네임</th>
+                        <th class="p-4 text-right">전투력</th>
+                        <th class="p-4 text-right">난투</th>
+                        <th class="p-4 text-right">균열</th>
+                        <th class="p-4 text-right">전장</th>
+                        <th class="p-4 text-right">군탑</th>
+                    </tr>
+                </thead>
+                <tbody id="member-table-body" class="divide-y divide-slate-700/50">
+                    <!-- JavaScript로 동적 삽입됨 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 성적 입력 모달 (팝업창) -->
+    <div id="input-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative space-y-4">
+            <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-pen text-blue-400"></i> 내 주간 성적 제출
+            </h2>
+            <form id="score-form" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">닉네임</label>
+                    <input type="text" id="input-name" required placeholder="예: GooZ" class="w-full p-2.5 rounded-lg table-input text-left">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">전투력 (k)</label>
+                        <input type="number" id="input-cp" required placeholder="617" class="w-full p-2 rounded-lg table-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">난투 점수</label>
+                        <input type="number" id="input-nt" required placeholder="229" class="w-full p-2 rounded-lg table-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">균열 점수</label>
+                        <input type="number" id="input-gr" required placeholder="2430" class="w-full p-2 rounded-lg table-input">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">전장 점수</label>
+                        <input type="number" id="input-bj" required placeholder="5310" class="w-full p-2 rounded-lg table-input">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">군탑 점수</label>
+                    <input type="number" id="input-gt" required placeholder="1381" class="w-full p-2 rounded-lg table-input">
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition text-white mt-2">
+                    제출하기
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 기본 더미 데이터 (이미지 기반)
+        let members = [
+            { rank: 1, diff: '-', name: 'GooZ', cp: 617, cpDiff: 21, nt: 229, ntDiff: -1, gr: 2430, grDiff: 100, bj: 5310, bjDiff: 320, gt: 1381, gtDiff: 11 },
+            { rank: 2, diff: '-', name: 'Wago', cp: 590, cpDiff: 17, nt: 225, ntDiff: 1, gr: 2001, grDiff: 60, bj: 4280, bjDiff: 110, gt: 1342, gtDiff: 15 },
+            { rank: 3, diff: '-', name: 'Rurugga', cp: 578, cpDiff: 19, nt: 232, ntDiff: 3, gr: 2421, grDiff: 121, bj: 4740, bjDiff: 370, gt: 1349, gtDiff: 28 },
+            { rank: 4, diff: '-', name: '지귀', cp: 568, cpDiff: 30, nt: 207, ntDiff: -14, gr: 2075, grDiff: 0, bj: 4110, bjDiff: 160, gt: 1267, gtDiff: 0 },
+            { rank: 5, diff: '▲1', name: 'BoxThieF', cp: 509, cpDiff: 29, nt: 215, ntDiff: -7, gr: 2000, grDiff: 40, bj: 3970, bjDiff: 230, gt: 1242, gtDiff: 0 }
+        ];
+
+        function renderTable() {
+            const tbody = document.getElementById('member-table-body');
+            tbody.innerHTML = members.map(m => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-4 text-center font-bold">${m.rank}</td>
+                    <td class="p-4 text-center text-xs ${m.diff.includes('▲') ? 'text-emerald-400' : m.diff.includes('▼') ? 'text-rose-400' : 'text-slate-400'}">${m.diff}</td>
+                    <td class="p-4 font-semibold text-white">${m.name}</td>
+                    <td class="p-4 text-right font-mono"><b>${m.cp}k</b> <span class="text-xs text-emerald-400">▲${m.cpDiff}</span></td>
+                    <td class="p-4 text-right font-mono">${m.nt} <span class="text-xs ${m.ntDiff < 0 ? 'text-rose-400' : 'text-emerald-400'}">${m.ntDiff < 0 ? '▼' : '▲'}${Math.abs(m.ntDiff)}</span></td>
+                    <td class="p-4 text-right font-mono">${m.gr.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.grDiff}</span></td>
+                    <td class="p-4 text-right font-mono">${m.bj.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.bjDiff}</span></td>
+                    <td class="p-4 text-right font-mono">${m.gt.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.gtDiff}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleModal() {
+            const modal = document.getElementById('input-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('input-name').value;
+            const cp = parseInt(document.getElementById('input-cp').value);
+            const nt = parseInt(document.getElementById('input-nt').value);
+            const gr = parseInt(document.getElementById('input-gr').value);
+            const bj = parseInt(document.getElementById('input-bj').value);
+            const gt = parseInt(document.getElementById('input-gt').value);
+
+            // 신규 입력 데이터 등록
+            members.push({
+                rank: members.length + 1,
+                diff: 'NEW',
+                name: name,
+                cp: cp, cpDiff: 0,
+                nt: nt, ntDiff: 0,
+                gr: gr, grDiff: 0,
+                bj: bj, bjDiff: 0,
+                gt: gt, gtDiff: 0
+            });
+
+            renderTable();
+            toggleModal();
+            alert(`${name}님의 성적이 성공적으로 반영되었습니다!`);
+        }
+
+        // 초기 실행
+        renderTable();
+    </script>
+</body>
+</html>
