@@ -14,6 +14,9 @@
         .table-input:focus { border-color: #3b82f6; outline: none; background: rgba(30, 41, 59, 0.95); }
         .select-input { text-align: left; background-color: #1e293b; color: #ffffff; }
         .select-input option { background-color: #0f172a; color: #ffffff; }
+        .up-text { color: #f87171; font-weight: 600; font-size: 0.85rem; }
+        .down-text { color: #60a5fa; font-weight: 600; font-size: 0.85rem; }
+        .same-text { color: #94a3b8; font-size: 0.85rem; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -28,116 +31,5 @@
                 <p class="text-slate-400 text-sm mt-1">전투력 기준 순위 및 전주 대비 변동 리포트</p>
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square"></i> 내 성적 입력하기
-                </button>
-            </div>
-        </div>
-
-        <!-- 주간 평균 성장량 요약 카드 -->
-        <div class="glass-panel rounded-2xl p-6 border-l-4 border-emerald-500">
-            <h3 class="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-chart-line"></i> 이번 주 클랜 평균 성장량
-            </h3>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center">
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                    <div class="text-xs text-slate-400">전투력</div>
-                    <div class="text-lg font-bold text-emerald-400">▲ 22k</div>
-                </div>
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                    <div class="text-xs text-slate-400">난투</div>
-                    <div class="text-lg font-bold text-rose-400">▼ 5</div>
-                </div>
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                    <div class="text-xs text-slate-400">균열</div>
-                    <div class="text-lg font-bold text-emerald-400">▲ 60</div>
-                </div>
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                    <div class="text-xs text-slate-400">전장</div>
-                    <div class="text-lg font-bold text-emerald-400">▲ 406</div>
-                </div>
-                <div class="bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
-                    <div class="text-xs text-slate-400">군탑</div>
-                    <div class="text-lg font-bold text-emerald-400">▲ 24</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 랭킹 & 성적 표 데이터 -->
-        <div class="glass-panel rounded-2xl overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-slate-800/80 text-slate-400 font-semibold uppercase border-b border-slate-700">
-                    <tr>
-                        <th class="p-4 text-center w-16">순위</th>
-                        <th class="p-4 text-center w-16">변동</th>
-                        <th class="p-4">닉네임</th>
-                        <th class="p-4 text-right">전투력</th>
-                        <th class="p-4 text-right">난투</th>
-                        <th class="p-4 text-right">균열</th>
-                        <th class="p-4 text-right">전장</th>
-                        <th class="p-4 text-right">군탑</th>
-                    </tr>
-                </thead>
-                <tbody id="member-table-body" class="divide-y divide-slate-700/50">
-                    <!-- JavaScript로 동적 삽입됨 -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- 성적 입력 모달 (팝업창) -->
-    <div id="input-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="glass-panel w-full max-w-md rounded-2xl p-6 relative space-y-4">
-            <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-user-pen text-blue-400"></i> 내 주간 성적 제출
-            </h2>
-            <form id="score-form" onsubmit="handleFormSubmit(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">닉네임 선택</label>
-                    <select id="input-name" required class="w-full p-2.5 rounded-lg table-input select-input">
-                        <option value="" disabled selected>닉네임을 선택하세요</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">전투력 (k)</label>
-                        <input type="number" id="input-cp" required placeholder="예: 617" class="w-full p-2 rounded-lg table-input">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">난투 점수</label>
-                        <input type="number" id="input-nt" required placeholder="예: 229" class="w-full p-2 rounded-lg table-input">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">균열 점수</label>
-                        <input type="number" id="input-gr" required placeholder="예: 2430" class="w-full p-2 rounded-lg table-input">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">전장 점수</label>
-                        <input type="number" id="input-bj" required placeholder="예: 5310" class="w-full p-2 rounded-lg table-input">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">군탑 점수</label>
-                    <input type="number" id="input-gt" required placeholder="예: 1381" class="w-full p-2 rounded-lg table-input">
-                </div>
-                <button type="submit" id="submit-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition text-white mt-2">
-                    제출하기
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // 발급받으신 구글 웹 앱 API URL
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz05OnrXas8cErL5ABzPmPoaYDY-__FOMZ1gHH48flVfeHg5BIZgr8nigZYeCxS7LLf/exec';
-
-        // 클랜원 닉네임 목록
-        const memberNames = [
-            "GooZ", "Wago", "Rurugga", "지귀", "BoxThieF", 
-            "Kazuya", "DIABLO", "Joon", "Dasom", "DeLord", 
-            "NAKATA", "길조", "BLUE_U", "TiGER", "한국인", 
-            "CoCo", "제주소나이", "DooLy", "이덕수", "연초", 
-            "예하령", "연탄이", "
+                <button onclick="toggleModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-600/30">
+                    <i class="fa-solid fa-pen-to-square"></i>
