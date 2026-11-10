@@ -97,7 +97,6 @@
             <form id="score-form" onsubmit="handleFormSubmit(event)" class="space-y-3">
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">닉네임 선택</label>
-                    <!-- 닉네임 선택 드롭다운 -->
                     <select id="input-name" required class="w-full p-2.5 rounded-lg table-input select-input">
                         <option value="" disabled selected>닉네임을 선택하세요</option>
                     </select>
@@ -124,7 +123,7 @@
                     <label class="block text-xs text-slate-400 mb-1">군탑 점수</label>
                     <input type="number" id="input-gt" required placeholder="예: 1381" class="w-full p-2 rounded-lg table-input">
                 </div>
-                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition text-white mt-2">
+                <button type="submit" id="submit-btn" class="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold transition text-white mt-2">
                     제출하기
                 </button>
             </form>
@@ -132,100 +131,13 @@
     </div>
 
     <script>
-        // 클랜원 닉네임 목록 (필요시 이름을 추가/수정하세요)
+        // 발급받으신 구글 웹 앱 API URL
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz05OnrXas8cErL5ABzPmPoaYDY-__FOMZ1gHH48flVfeHg5BIZgr8nigZYeCxS7LLf/exec';
+
+        // 클랜원 닉네임 목록
         const memberNames = [
             "GooZ", "Wago", "Rurugga", "지귀", "BoxThieF", 
             "Kazuya", "DIABLO", "Joon", "Dasom", "DeLord", 
             "NAKATA", "길조", "BLUE_U", "TiGER", "한국인", 
             "CoCo", "제주소나이", "DooLy", "이덕수", "연초", 
-            "예하령", "연탄이", "왕충짱"
-        ];
-
-        // 기본 더미 데이터
-        let members = [
-            { rank: 1, diff: '-', name: 'GooZ', cp: 617, cpDiff: 21, nt: 229, ntDiff: -1, gr: 2430, grDiff: 100, bj: 5310, bjDiff: 320, gt: 1381, gtDiff: 11 },
-            { rank: 2, diff: '-', name: 'Wago', cp: 590, cpDiff: 17, nt: 225, ntDiff: 1, gr: 2001, grDiff: 60, bj: 4280, bjDiff: 110, gt: 1342, gtDiff: 15 },
-            { rank: 3, diff: '-', name: 'Rurugga', cp: 578, cpDiff: 19, nt: 232, ntDiff: 3, gr: 2421, grDiff: 121, bj: 4740, bjDiff: 370, gt: 1349, gtDiff: 28 },
-            { rank: 4, diff: '-', name: '지귀', cp: 568, cpDiff: 30, nt: 207, ntDiff: -14, gr: 2075, grDiff: 0, bj: 4110, bjDiff: 160, gt: 1267, gtDiff: 0 },
-            { rank: 5, diff: '▲1', name: 'BoxThieF', cp: 509, cpDiff: 29, nt: 215, ntDiff: -7, gr: 2000, grDiff: 40, bj: 3970, bjDiff: 230, gt: 1242, gtDiff: 0 }
-        ];
-
-        // 드롭다운에 닉네임 리스트 채우기
-        function initNameDropdown() {
-            const select = document.getElementById('input-name');
-            memberNames.sort().forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                select.appendChild(opt);
-            });
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('member-table-body');
-            tbody.innerHTML = members.map(m => `
-                <tr class="hover:bg-slate-800/40 transition">
-                    <td class="p-4 text-center font-bold">${m.rank}</td>
-                    <td class="p-4 text-center text-xs ${m.diff.includes('▲') ? 'text-emerald-400' : m.diff.includes('▼') ? 'text-rose-400' : 'text-slate-400'}">${m.diff}</td>
-                    <td class="p-4 font-semibold text-white">${m.name}</td>
-                    <td class="p-4 text-right font-mono"><b>${m.cp}k</b> <span class="text-xs text-emerald-400">▲${m.cpDiff}</span></td>
-                    <td class="p-4 text-right font-mono">${m.nt} <span class="text-xs ${m.ntDiff < 0 ? 'text-rose-400' : 'text-emerald-400'}">${m.ntDiff < 0 ? '▼' : '▲'}${Math.abs(m.ntDiff)}</span></td>
-                    <td class="p-4 text-right font-mono">${m.gr.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.grDiff}</span></td>
-                    <td class="p-4 text-right font-mono">${m.bj.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.bjDiff}</span></td>
-                    <td class="p-4 text-right font-mono">${m.gt.toLocaleString()} <span class="text-xs text-emerald-400">▲${m.gtDiff}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function toggleModal() {
-            const modal = document.getElementById('input-modal');
-            modal.classList.toggle('hidden');
-            modal.classList.toggle('flex');
-        }
-
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('input-name').value;
-            const cp = parseInt(document.getElementById('input-cp').value);
-            const nt = parseInt(document.getElementById('input-nt').value);
-            const gr = parseInt(document.getElementById('input-gr').value);
-            const bj = parseInt(document.getElementById('input-bj').value);
-            const gt = parseInt(document.getElementById('input-gt').value);
-
-            // 기존 명단 검색 후 업데이트 또는 추가
-            let existing = members.find(m => m.name === name);
-            if (existing) {
-                existing.cpDiff = cp - existing.cp;
-                existing.cp = cp;
-                existing.ntDiff = nt - existing.nt;
-                existing.nt = nt;
-                existing.grDiff = gr - existing.gr;
-                existing.gr = gr;
-                existing.bjDiff = bj - existing.bj;
-                existing.bj = bj;
-                existing.gtDiff = gt - existing.gt;
-                existing.gt = gt;
-            } else {
-                members.push({
-                    rank: members.length + 1,
-                    diff: 'NEW',
-                    name: name,
-                    cp: cp, cpDiff: 0,
-                    nt: nt, ntDiff: 0,
-                    gr: gr, grDiff: 0,
-                    bj: bj, bjDiff: 0,
-                    gt: gt, gtDiff: 0
-                });
-            }
-
-            renderTable();
-            toggleModal();
-            alert(`${name}님의 성적이 성공적으로 반영되었습니다!`);
-        }
-
-        // 초기 실행
-        initNameDropdown();
-        renderTable();
-    </script>
-</body>
-</html>
+            "예하령", "연탄이", "
